@@ -8,7 +8,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="Issues">
+    <Stack.Navigator
+      initialRouteName="Issues"
+      screenOptions={{ headerShown: false }}
+    >
       <Stack.Screen name="Issues" component={IssuesScreen} />
       <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} />
     </Stack.Navigator>
