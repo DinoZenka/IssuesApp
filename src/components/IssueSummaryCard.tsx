@@ -2,16 +2,13 @@ import React, { memo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useAppTheme } from '@src/utils/theme';
 import { IssueStatus } from '@src/types/issue';
+import Shimmer from './Shimmer';
+import { issueStatusLabel } from '@src/utils/typeLabels';
 
 interface Props {
   count: number;
   type: IssueStatus;
 }
-
-const TITLES: Record<IssueStatus, string> = {
-  open: 'Open',
-  closed: 'Closed',
-};
 
 const IssueSummaryCard: React.FC<Props> = ({ count, type }) => {
   const theme = useAppTheme();
@@ -22,9 +19,29 @@ const IssueSummaryCard: React.FC<Props> = ({ count, type }) => {
 
   return (
     <View style={[styles.card, { backgroundColor: colors.card, ...shadow.sm }]}>
-      <Text style={[styles.label]}>{TITLES[type] || type}</Text>
+      <Text style={[styles.label]}>{issueStatusLabel[type] || type}</Text>
       <View style={styles.valueRow}>
         <Text style={[styles.value, { color: colors.text }]}>{count}</Text>
+        <View style={[styles.dot, { backgroundColor: dotColor }]} />
+      </View>
+    </View>
+  );
+};
+
+export const IssueSummaryCardSkeleton: React.FC<Pick<Props, 'type'>> = ({
+  type,
+}) => {
+  const theme = useAppTheme();
+  const { colors, shadow } = theme;
+
+  const dotColor = type === 'closed' ? colors.green80 : colors.purple60;
+  const styles = createStyles(theme);
+
+  return (
+    <View style={[styles.card, { backgroundColor: colors.card }]}>
+      <Shimmer width={80} />
+      <View style={styles.valueRow}>
+        <Shimmer width={40} />
         <View style={[styles.dot, { backgroundColor: dotColor }]} />
       </View>
     </View>

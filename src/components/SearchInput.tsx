@@ -1,7 +1,14 @@
 import React, { memo } from 'react';
-import { StyleSheet, TextInput, View, Text } from 'react-native';
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import { useAppTheme } from '@src/utils/theme';
-import { SearchIcon } from '@src/assets/icons';
+import { CrossIcon, SearchIcon } from '@src/assets/icons';
+import Shimmer from './Shimmer';
 
 interface IProps {
   value: string;
@@ -14,6 +21,7 @@ const SearchInput: React.FC<IProps> = ({ value, onChangeText, error }) => {
   const { colors } = theme;
 
   const styles = createStyles(theme, !!error);
+  const handleClearInput = () => onChangeText('');
 
   return (
     <View style={styles.container}>
@@ -28,10 +36,35 @@ const SearchInput: React.FC<IProps> = ({ value, onChangeText, error }) => {
           accessibilityLabel="Search issues by title"
         />
         <View style={styles.iconWrapper}>
-          <SearchIcon fill={colors.secondary} />
+          {value ? (
+            <TouchableOpacity onPress={handleClearInput}>
+              <CrossIcon />
+            </TouchableOpacity>
+          ) : (
+            <SearchIcon fill={colors.secondary} />
+          )}
         </View>
       </View>
       {!!error && <Text style={styles.errorText}>{error}</Text>}
+    </View>
+  );
+};
+
+export const SearchInputSkeleton = () => {
+  const theme = useAppTheme();
+  const { colors } = theme;
+
+  const styles = createStyles(theme, false);
+
+  return (
+    <View style={styles.container}>
+      <View style={[styles.inputWrapper, styles.skeletonInputWrapper]}>
+        <Shimmer width="85%" />
+        <View style={styles.iconWrapper}>
+          <SearchIcon stroke={colors.dark} />
+        </View>
+      </View>
+      <Shimmer width="100%" height={12} style={styles.errorText} />
     </View>
   );
 };
@@ -53,6 +86,10 @@ const createStyles = (
       borderColor: hasError ? colors.danger : colors.border,
       paddingHorizontal: spacing.lg,
       height: 48,
+    },
+    skeletonInputWrapper: {
+      backgroundColor: colors.card,
+      justifyContent: 'space-between',
     },
     input: {
       ...typography.variants.bodyLight,

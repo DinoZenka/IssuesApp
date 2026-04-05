@@ -13,6 +13,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useAppTheme } from '@src/utils/theme';
+import Shimmer from './Shimmer';
 
 interface Props<T> {
   values: T[];
@@ -115,6 +116,21 @@ function SegmentedControl<T>({
   );
 }
 
+export const SegmentedControlSkeleton = () => {
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
+
+  return (
+    <View style={[styles.container, styles.skeletonContainer]}>
+      <View style={styles.skeletonActiveItem}>
+        <Shimmer width={18} height={12} />
+      </View>
+      <Shimmer width={42} height={12} />
+      <Shimmer width={42} height={12} />
+    </View>
+  );
+};
+
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   const { colors } = theme;
   return StyleSheet.create({
@@ -153,6 +169,22 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     },
     flexSegment: {
       flex: 1,
+    },
+    skeletonContainer: {
+      height: 40,
+      alignItems: 'center',
+      gap: 12,
+      padding: 4,
+      paddingRight: 12,
+      backgroundColor: colors.background,
+    },
+    skeletonActiveItem: {
+      height: '100%',
+      padding: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'white',
+      borderRadius: 8,
     },
   });
 };

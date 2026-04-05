@@ -5,3 +5,5 @@ export { default as ClockIcon } from './ClockIcon';
 export { default as PriorityLowIcon } from './PriorityLowIcon';
 export { default as PriorityMediumIcon } from './PriorityMediumIcon';
 export { default as PriorityHighIcon } from './PriorityHighIcon';
+export { default as PageSearchIcon } from './PageSearchIcon';
+export { default as CrossIcon } from './CrossIcon';

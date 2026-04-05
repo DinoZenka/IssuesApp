@@ -1,25 +1,24 @@
-import React, { memo } from 'react';
+import React, { FC, memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Issue } from '@src/types/issue';
+import { Issue, IssuePriority, IssueStatus } from '@src/types/issue';
 import { format } from 'date-fns';
 import { useAppTheme } from '@src/utils/theme';
 import {
   ClockIcon,
-  PriorityHighIcon,
-  PriorityLowIcon,
-  PriorityMediumIcon,
   SearchIcon,
   StatusClosedIcon,
   StatusOpenIcon,
 } from '@src/assets/icons';
 import PriorityIcon from './PriorityIcon';
+import Shimmer from './Shimmer';
+import { issuePriorityLabel, issueStatusLabel } from '@src/utils/typeLabels';
 
-interface Props {
+interface IProps {
   issue: Issue;
   onPress: (id: string) => void;
 }
 
-const IssueItem: React.FC<Props> = ({ issue, onPress }) => {
+const IssueItem: FC<IProps> = ({ issue, onPress }) => {
   const theme = useAppTheme();
   const { colors } = theme;
 
@@ -37,6 +36,9 @@ const IssueItem: React.FC<Props> = ({ issue, onPress }) => {
   const statusIcon =
     issue.status == 'open' ? <StatusOpenIcon /> : <StatusClosedIcon />;
 
+  const statusLabel = issueStatusLabel[issue.status] || issue.status;
+  const priorityLabel = issuePriorityLabel[issue.priority] || issue.priority;
+
   return (
     <TouchableOpacity
       onPress={handlePress}
@@ -48,11 +50,11 @@ const IssueItem: React.FC<Props> = ({ issue, onPress }) => {
       <View style={styles.header}>
         <View style={styles.badgeWrapper}>
           {statusIcon}
-          <Text style={styles.badgeText}>{issue.status}</Text>
+          <Text style={styles.badgeText}>{statusLabel}</Text>
         </View>
         <View style={styles.badgeWrapper}>
           <PriorityIcon priority={issue.priority} />
-          <Text style={styles.badgeText}>{issue.priority}</Text>
+          <Text style={styles.badgeText}>{priorityLabel}</Text>
         </View>
       </View>
 
@@ -62,6 +64,9 @@ const IssueItem: React.FC<Props> = ({ issue, onPress }) => {
         <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
           {issue.title}
         </Text>
+        <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+          {issue.description}
+        </Text>
       </View>
 
       <View style={styles.footer}>
@@ -69,6 +74,52 @@ const IssueItem: React.FC<Props> = ({ issue, onPress }) => {
         <Text style={styles.updatedAt}>Updated on: {formattedDate}</Text>
       </View>
     </TouchableOpacity>
+  );
+};
+
+interface IssueItemSkeletonProps {
+  status: IssueStatus;
+  priority: IssuePriority;
+}
+
+export const IssueItemSkeleton: FC<IssueItemSkeletonProps> = ({
+  status,
+  priority,
+}) => {
+  const theme = useAppTheme();
+  const { colors } = theme;
+
+  const styles = createStyles(theme);
+  const statusIcon =
+    status == 'open' ? <StatusOpenIcon /> : <StatusClosedIcon />;
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.badgeWrapper}>
+          {statusIcon}
+          <Shimmer width={80} height={12} />
+        </View>
+        <View style={styles.badgeWrapper}>
+          <PriorityIcon priority={priority} />
+          <Shimmer width={60} height={12} />
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+      <View style={styles.body}>
+        <Shimmer width="100%" height={13} />
+        <View />
+        <Shimmer width="100%" height={11} />
+        <Shimmer width="100%" height={11} />
+      </View>
+
+      <View style={styles.footer}>
+        <ClockIcon />
+        <Shimmer width={200} height={12} />
+      </View>
+    </View>
   );
 };
 
@@ -109,10 +160,12 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       gap: spacing.sm,
     },
     title: {
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.semiBold,
-      color: colors.text,
-      lineHeight: 22,
+      ...typography.variants.subtitle2,
+      color: colors.dark,
+    },
+    description: {
+      ...typography.variants.body2,
+      color: colors.dark80,
     },
     footer: {
       marginTop: spacing.md,

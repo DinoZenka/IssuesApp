@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
 import { useIssues } from '@src/hooks/useIssues';
@@ -7,10 +7,16 @@ import IssueCards from '@src/components/IssueCards';
 import IssueStatusIndicator from '@src/components/IssueStatusIndicator';
 import SegmentedControl from '@src/components/SegmentedControl';
 import SearchInput from '@src/components/SearchInput';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useAppTheme } from '@src/utils/theme';
 import { format } from 'date-fns';
 import IssueSummaryCard from '@src/components/IssueSummaryCard';
+import IssuesSkeleton from './IssuesSkeleton';
+import { useDebounce } from '@src/hooks/useDebounce';
+import LinearGradient from 'react-native-linear-gradient';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Issues'>;
 
@@ -18,12 +24,20 @@ const FILTER_VALUES = ['All', 'Closed', 'Open'];
 
 const IssuesScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useAppTheme();
-  const { data: issues, isLoading, isError, refetch, isFetching } = useIssues();
+  const {
+    data: issues,
+    isLoading,
+    isError: isQueryError,
+    refetch,
+    isFetching,
+  } = useIssues();
 
-  console.log('DATA: ', isError, issues);
+  const { bottom } = useSafeAreaInsets();
+
   const [filterIndex, setFilterIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchError, setSearchError] = useState<string | undefined>();
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const { closedCount, openCount } = useMemo(() => {
     if (!issues) return { closedCount: 0, openCount: 0 };
@@ -48,19 +62,17 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
 
       const matchesSearch = issue.title
         .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        .includes(debouncedSearchQuery.toLowerCase());
 
       return matchesStatus && matchesSearch;
     });
-  }, [issues, filterIndex, searchQuery]);
+  }, [issues, filterIndex, debouncedSearchQuery]);
+
+  const isFilterError =
+    debouncedSearchQuery.length > 0 && filteredIssues.length === 0;
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
-    if (text.toLowerCase().includes('error')) {
-      setSearchError('An error occured while searching');
-    } else {
-      setSearchError(undefined);
-    }
   };
 
   const currentDay = useMemo(() => {
@@ -77,27 +89,18 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
 
   const styles = createStyles(theme);
 
-  if (isError) {
-    return (
-      <View style={styles.center}>
-        <Text style={[styles.message, styles.errorText]}>
-          Failed to load issues.
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
+  if (isLoading) {
+    return <IssuesSkeleton />;
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom', 'top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Issues</Text>
           <Text style={styles.dateText}>{currentDay}</Text>
         </View>
-        <Text style={styles.counterText}>{issues?.length || '0'}</Text>
+        <Text style={styles.counterText}>{issues?.length || 'N/A'}</Text>
         <IssueStatusIndicator
           closedCount={closedCount}
           openCount={openCount}
@@ -130,15 +133,23 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
         <SearchInput
           value={searchQuery}
           onChangeText={handleSearchChange}
-          error={searchError}
+          error={isFilterError ? 'An error occured while searching' : undefined}
         />
         <IssueCards
           issues={filteredIssues}
           onIssuePress={handleIssuePress}
           isFetching={isFetching}
           onRefresh={refetch}
+          isError={isQueryError || isFilterError}
         />
       </View>
+      <LinearGradient
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        colors={[theme.colors.card, `${theme.colors.card}00`]}
+        style={[styles.shadowGradient, { height: 10 + bottom }]}
+        pointerEvents="none"
+      />
     </SafeAreaView>
   );
 };
@@ -187,6 +198,7 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       backgroundColor: colors.card,
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.xxl,
+      marginTop: spacing.sm,
       borderTopLeftRadius: 16,
       borderTopRightRadius: 16,
     },
@@ -228,12 +240,17 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     issueStatusText: {
       ...typography.variants.bodyTab,
       color: colors.dark80,
-      paddingHorizontal: 8,
-      paddingVertical: 7,
+      paddingHorizontal: 4,
     },
     issueStatusTextActive: {
       ...typography.variants.body2,
       color: colors.dark,
+    },
+    shadowGradient: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
     },
   });
 };

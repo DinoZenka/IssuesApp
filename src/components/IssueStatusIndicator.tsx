@@ -17,10 +17,12 @@ const IssueStatusIndicator: React.FC<Props> = ({
 
   const total = closedCount + openCount;
   const styles = createStyles(theme);
+  const emptyLine = total < 1;
 
   return (
     <View style={[styles.container, style]}>
-      {total > 0 && (
+      {emptyLine && <View style={[styles.segment, styles.segmentEmpty]} />}
+      {!emptyLine && (
         <>
           <View
             style={[
@@ -57,6 +59,10 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     },
     segmentOpen: {
       backgroundColor: colors.purple60,
+    },
+    segmentEmpty: {
+      backgroundColor: colors.dark40,
+      flex: 1,
     },
     closedSegment: {
       borderTopLeftRadius: 2,
