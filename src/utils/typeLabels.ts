@@ -9,3 +9,8 @@ export const issuePriorityLabel: Record<IssuePriority, string> = {
   medium: 'Medium',
   high: 'High',
 };
+
+export const issueFilterLaber: Record<IssueStatus | 'all', string> = {
+  ...issueStatusLabel,
+  all: 'All',
+};

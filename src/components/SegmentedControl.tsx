@@ -25,6 +25,7 @@ interface Props<T> {
   renderItem: (item: T, isSelected: boolean) => ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 const SPRING_CONFIG = {
@@ -42,6 +43,7 @@ function SegmentedControl<T>({
   renderItem,
   containerStyle,
   fullWidth = false,
+  disabled = false,
 }: Props<T>) {
   const theme = useAppTheme();
   const [layouts, setLayouts] = React.useState<{ x: number; width: number }[]>(
@@ -103,6 +105,7 @@ function SegmentedControl<T>({
 
       {values.map((item, index) => (
         <TouchableOpacity
+          disabled={disabled}
           key={index.toString()}
           onLayout={onLayout(index)}
           style={[styles.segment, fullWidth && styles.flexSegment]}

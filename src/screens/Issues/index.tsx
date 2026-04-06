@@ -17,10 +17,10 @@ import IssueSummaryCard from '@src/components/IssueSummaryCard';
 import IssuesSkeleton from './IssuesSkeleton';
 import { useDebounce } from '@src/hooks/useDebounce';
 import LinearGradient from 'react-native-linear-gradient';
+import { FILTER_VALUES } from '@src/utils/constants';
+import { issueFilterLaber } from '@src/utils/typeLabels';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Issues'>;
-
-const FILTER_VALUES = ['All', 'Closed', 'Open'];
 
 const IssuesScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useAppTheme();
@@ -125,7 +125,7 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
                   isSelected && styles.issueStatusTextActive,
                 ]}
               >
-                {item}
+                {issueFilterLaber[item] || item}
               </Text>
             )}
           />

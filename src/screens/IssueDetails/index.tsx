@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, FC } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   RefreshControl,
+  ViewStyle,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
@@ -29,13 +30,12 @@ import SegmentedControl from '@src/components/SegmentedControl';
 import PriorityIcon from '@src/components/PriorityIcon';
 import { issuePriorityLabel, issueStatusLabel } from '@src/utils/typeLabels';
 import StatusIcon from '@src/components/StatusIcon';
-import IssueDetailsBadge, { OfflineBadge } from '@src/components/Badge';
+import IssueDetailsBadge from '@src/components/Badge';
 import LinearGradient from 'react-native-linear-gradient';
+import Shimmer from '@src/components/Shimmer';
+import { DETAILS_PRIORITIES, DETAILS_STATUSES } from '@src/utils/constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'IssueDetails'>;
-
-const PRIORITIES: IssuePriority[] = ['low', 'medium', 'high'];
-const STATUSES: IssueStatus[] = ['closed', 'open'];
 
 const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { ID } = route.params;
@@ -91,15 +91,9 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const isChanged = priority !== issue?.priority || status !== issue?.status;
 
-  if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
+  const showSkeleton = isLoading || !issue;
 
-  if (isError || !issue) {
+  if (isError) {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>Failed to load issue details.</Text>
@@ -119,13 +113,17 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text style={styles.headerBackText}>Go Back</Text>
         </TouchableOpacity>
 
-        <IssueDetailsBadge isLoading={isFetching || isUpdating} />
+        {showSkeleton ? (
+          <Shimmer width={80} />
+        ) : (
+          <IssueDetailsBadge isLoading={isFetching || isUpdating} />
+        )}
       </View>
 
       <ScrollView
         refreshControl={
           <RefreshControl
-            refreshing={isPending}
+            refreshing={isPending && !!issue}
             onRefresh={handleRefresh}
             tintColor={colors.primary}
             colors={[colors.primary]}
@@ -134,12 +132,22 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <View style={styles.contentWrapper}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>{issue.title}</Text>
+            {showSkeleton ? (
+              <Shimmer width={250} height={24} style={{ marginTop: 12 }} />
+            ) : (
+              <Text style={styles.title}>{issue.title}</Text>
+            )}
           </View>
 
           <View style={styles.updatedRow}>
             <ClockIcon />
-            <Text style={styles.updatedText}>Updated on: {formattedDate}</Text>
+            {showSkeleton ? (
+              <Shimmer width={225} height={18} />
+            ) : (
+              <Text style={styles.updatedText}>
+                Updated on: {formattedDate}
+              </Text>
+            )}
           </View>
 
           <View style={styles.divider} />
@@ -147,24 +155,33 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.segmentSection}>
             <View style={styles.segmentTitleWrapper}>
               <SparksIcon />
-              <Text style={styles.segmentTitle}>Priority</Text>
+              {showSkeleton ? (
+                <Shimmer width={60} />
+              ) : (
+                <Text style={styles.segmentTitle}>Priority</Text>
+              )}
             </View>
             <SegmentedControl
               fullWidth
-              values={PRIORITIES}
+              disabled={showSkeleton}
+              values={DETAILS_PRIORITIES}
               selectedValue={priority}
               onSelectedValueChange={setPriority}
               renderItem={(item, isSelected) => (
                 <View style={styles.segmentContent}>
                   <PriorityIcon priority={item} />
-                  <Text
-                    style={[
-                      styles.segmentText,
-                      isSelected && styles.segmentTextActive,
-                    ]}
-                  >
-                    {issuePriorityLabel[item] || item}
-                  </Text>
+                  {showSkeleton ? (
+                    <Shimmer width={60} height={16} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.segmentText,
+                        isSelected && styles.segmentTextActive,
+                      ]}
+                    >
+                      {issuePriorityLabel[item] || item}
+                    </Text>
+                  )}
                 </View>
               )}
             />
@@ -175,32 +192,47 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.segmentSection}>
             <View style={styles.segmentTitleWrapper}>
               <TaskListIcon />
-              <Text style={styles.segmentTitle}>Status</Text>
+              {showSkeleton ? (
+                <Shimmer width={60} />
+              ) : (
+                <Text style={styles.segmentTitle}>Status</Text>
+              )}
             </View>
             <SegmentedControl
               fullWidth
-              values={STATUSES}
+              disabled={showSkeleton}
+              values={DETAILS_STATUSES}
               selectedValue={status}
               onSelectedValueChange={setStatus}
               renderItem={(item, isSelected) => (
                 <View style={styles.segmentContent}>
                   <StatusIcon status={item} />
-                  <Text
-                    style={[
-                      styles.segmentText,
-                      isSelected && styles.segmentTextActive,
-                    ]}
-                  >
-                    {issueStatusLabel[item] || item}
-                  </Text>
+                  {showSkeleton ? (
+                    <Shimmer width={80} height={16} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.segmentText,
+                        isSelected && styles.segmentTextActive,
+                      ]}
+                    >
+                      {issueStatusLabel[item] || item}
+                    </Text>
+                  )}
                 </View>
               )}
             />
           </View>
         </View>
         <View style={styles.descriptionWrapper}>
-          <Text style={styles.descriptionTitle}>Description</Text>
-          <Text style={styles.descriptionBody}>{issue.description}</Text>
+          {showSkeleton ? (
+            <DesctiptionSkeleton containerStyle={styles.skeletonDescription} />
+          ) : (
+            <>
+              <Text style={styles.descriptionTitle}>Description</Text>
+              <Text style={styles.descriptionBody}>{issue.description}</Text>
+            </>
+          )}
         </View>
       </ScrollView>
 
@@ -230,6 +262,30 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     </SafeAreaView>
   );
 };
+
+const DesctiptionSkeleton: FC<{ containerStyle?: ViewStyle }> = ({
+  containerStyle,
+}) => (
+  <View style={containerStyle}>
+    <Shimmer width={60} height={24} />
+    <View />
+    <Shimmer />
+    <Shimmer />
+    <Shimmer />
+    <View />
+    <Shimmer />
+    <Shimmer />
+    <Shimmer />
+    <View />
+    <Shimmer />
+    <Shimmer />
+    <Shimmer />
+    <View />
+    <Shimmer />
+    <Shimmer />
+    <Shimmer />
+  </View>
+);
 
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   const { colors, spacing, typography } = theme;
@@ -376,6 +432,9 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       right: 0,
       top: -20,
       height: 20,
+    },
+    skeletonDescription: {
+      gap: spacing.md,
     },
   });
 };
