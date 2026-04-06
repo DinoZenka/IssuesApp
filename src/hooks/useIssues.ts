@@ -6,15 +6,14 @@ import { Issue } from '@src/types/issue';
 export const useIssues = () => {
   return useQuery({
     queryKey: queryKeys.issues,
-    queryFn: fetchIssues,
-    staleTime: 0,
+    queryFn: ({ signal }) => fetchIssues(signal),
   });
 };
 
 export const useIssue = (id: string) => {
   return useQuery({
     queryKey: queryKeys.issueDetails(id),
-    queryFn: () => fetchIssueById(id),
+    queryFn: ({ signal }) => fetchIssueById(id, signal),
     enabled: !!id,
   });
 };
@@ -23,6 +22,7 @@ export const useUpdateIssue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    networkMode: 'always',
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Issue> }) =>
       updateIssue(id, updates),
     onMutate: async ({ id, updates }) => {

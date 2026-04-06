@@ -37,7 +37,13 @@ const SearchInput: React.FC<IProps> = ({ value, onChangeText, error }) => {
         />
         <View style={styles.iconWrapper}>
           {value ? (
-            <TouchableOpacity onPress={handleClearInput}>
+            <TouchableOpacity
+              onPress={handleClearInput}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search input"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <CrossIcon />
             </TouchableOpacity>
           ) : (
@@ -57,7 +63,12 @@ export const SearchInputSkeleton = () => {
   const styles = createStyles(theme, false);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       <View style={[styles.inputWrapper, styles.skeletonInputWrapper]}>
         <Shimmer width="85%" />
         <View style={styles.iconWrapper}>

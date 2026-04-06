@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
 import { useIssues } from '@src/hooks/useIssues';
-import IssueCards from '@src/components/IssueCards';
+import IssueCards, { IssuesCardsSkeleton } from '@src/components/IssueCards';
 import IssueStatusIndicator from '@src/components/IssueStatusIndicator';
 import SegmentedControl from '@src/components/SegmentedControl';
-import SearchInput from '@src/components/SearchInput';
+import SearchInput, { SearchInputSkeleton } from '@src/components/SearchInput';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -14,11 +14,11 @@ import {
 import { useAppTheme } from '@src/utils/theme';
 import { format } from 'date-fns';
 import IssueSummaryCard from '@src/components/IssueSummaryCard';
-import IssuesSkeleton from './IssuesSkeleton';
 import { useDebounce } from '@src/hooks/useDebounce';
 import LinearGradient from 'react-native-linear-gradient';
 import { FILTER_VALUES } from '@src/utils/constants';
 import { issueFilterLaber } from '@src/utils/typeLabels';
+import Shimmer from '@src/components/Shimmer';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Issues'>;
 
@@ -89,60 +89,109 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
 
   const styles = createStyles(theme);
 
-  if (isLoading) {
-    return <IssuesSkeleton />;
-  }
+  const showSkeleton = isLoading;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>Issues</Text>
-          <Text style={styles.dateText}>{currentDay}</Text>
-        </View>
-        <Text style={styles.counterText}>{issues?.length || 'N/A'}</Text>
-        <IssueStatusIndicator
-          closedCount={closedCount}
-          openCount={openCount}
-          style={styles.statusIndicator}
-        />
-        <View style={styles.summaryCardsContainer}>
-          <IssueSummaryCard count={closedCount} type="closed" />
-          <IssueSummaryCard count={openCount} type="open" />
-        </View>
-      </View>
-      <View style={styles.listContainer}>
-        <View style={styles.listHeader}>
-          <Text style={styles.listTitle}>Issues</Text>
-          <SegmentedControl
-            values={FILTER_VALUES}
-            selectedIndex={filterIndex}
-            onChange={setFilterIndex}
-            renderItem={(item, isSelected) => (
-              <Text
-                style={[
-                  styles.issueStatusText,
-                  isSelected && styles.issueStatusTextActive,
-                ]}
-              >
-                {issueFilterLaber[item] || item}
-              </Text>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            {showSkeleton ? (
+              <>
+                <Shimmer width={60} />
+                <Shimmer width={100} />
+              </>
+            ) : (
+              <>
+                <Text style={styles.title}>Issues</Text>
+                <Text style={styles.dateText}>{currentDay}</Text>
+              </>
             )}
+          </View>
+          {showSkeleton ? (
+            <Shimmer height={28} style={styles.totalCounterSkeleton} />
+          ) : (
+            <Text style={styles.counterText}>{issues?.length || 'N/A'}</Text>
+          )}
+          <IssueStatusIndicator
+            showSkeleton={showSkeleton}
+            closedCount={closedCount}
+            openCount={openCount}
+            style={styles.statusIndicator}
           />
+
+          <View style={styles.summaryCardsContainer}>
+            <IssueSummaryCard
+              count={closedCount}
+              type="closed"
+              showSkeleton={showSkeleton}
+            />
+            <IssueSummaryCard
+              count={openCount}
+              type="open"
+              showSkeleton={showSkeleton}
+            />
+          </View>
         </View>
-        <SearchInput
-          value={searchQuery}
-          onChangeText={handleSearchChange}
-          error={isFilterError ? 'An error occured while searching' : undefined}
-        />
-        <IssueCards
-          issues={filteredIssues}
-          onIssuePress={handleIssuePress}
-          isFetching={isFetching}
-          onRefresh={refetch}
-          isError={isQueryError || isFilterError}
-        />
-      </View>
+        <View style={styles.listContainer}>
+          <View style={styles.listHeader}>
+            {showSkeleton ? (
+              <Shimmer width={60} />
+            ) : (
+              <Text style={styles.listTitle}>Issues</Text>
+            )}
+
+            <SegmentedControl
+              disabled={showSkeleton}
+              values={FILTER_VALUES}
+              selectedIndex={filterIndex}
+              onChange={setFilterIndex}
+              getItemAccessibilityLabel={item =>
+                `Filter issues by ${issueFilterLaber[item] || item}`
+              }
+              renderItem={(item, isSelected) =>
+                showSkeleton ? (
+                  <Shimmer width={28} height={20} />
+                ) : (
+                  <Text
+                    style={[
+                      styles.issueStatusText,
+                      isSelected && styles.issueStatusTextActive,
+                    ]}
+                  >
+                    {issueFilterLaber[item] || item}
+                  </Text>
+                )
+              }
+            />
+          </View>
+          {showSkeleton ? (
+            <SearchInputSkeleton />
+          ) : (
+            <SearchInput
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              error={
+                isFilterError ? 'An error occured while searching' : undefined
+              }
+            />
+          )}
+          {showSkeleton ? (
+            <IssuesCardsSkeleton />
+          ) : (
+            <IssueCards
+              issues={filteredIssues}
+              onIssuePress={handleIssuePress}
+              isFetching={isFetching}
+              onRefresh={refetch}
+              isError={isQueryError || isFilterError}
+            />
+          )}
+        </View>
+      </KeyboardAvoidingView>
       <LinearGradient
         start={{ x: 0, y: 1 }}
         end={{ x: 0, y: 0 }}
@@ -203,7 +252,7 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       borderTopRightRadius: 16,
     },
     listHeader: {
-      marginBottom: spacing.md,
+      marginBottom: spacing.lg,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -217,25 +266,6 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       justifyContent: 'center',
       alignItems: 'center',
       padding: spacing.xl,
-    },
-    message: {
-      marginTop: spacing.md,
-      fontSize: typography.fontSize.md,
-      color: colors.textSecondary,
-    },
-    errorText: {
-      color: colors.danger,
-    },
-    retryButton: {
-      marginTop: spacing.lg,
-      paddingHorizontal: spacing.xxl,
-      paddingVertical: spacing.md,
-      backgroundColor: colors.primary,
-      borderRadius: spacing.sm,
-    },
-    retryText: {
-      color: '#fff',
-      fontWeight: typography.fontWeight.semiBold,
     },
     issueStatusText: {
       ...typography.variants.bodyTab,
@@ -251,6 +281,10 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       left: 0,
       right: 0,
       bottom: 0,
+    },
+    totalCounterSkeleton: {
+      marginTop: spacing.md,
+      marginBottom: spacing.md,
     },
   });
 };

@@ -1,10 +1,12 @@
 import React, { useCallback, memo, FC } from 'react';
-import { FlatList, StyleSheet, View, Text, ListRenderItem } from 'react-native';
+import { FlatList, StyleSheet, View, ListRenderItem } from 'react-native';
 import { Issue } from '@src/types/issue';
-import IssueItem from './IssueItem';
+import IssueItem, { IssueItemSkeleton } from './IssueItem';
 import { useAppTheme } from '@src/utils/theme';
 import ListEmptyComponent from './ListEmptyComponent';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SKELETON_ISSUES_LIST } from '@src/utils/constants';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface IProps {
   issues: Issue[];
@@ -12,6 +14,7 @@ interface IProps {
   isFetching: boolean;
   onRefresh: () => void;
   isError?: boolean;
+  showSkeleton?: boolean;
 }
 
 const EMPTY_LIST_TITLE = 'No issues yet';
@@ -39,32 +42,87 @@ const IssueCards: FC<IProps> = ({
   const styles = createStyles(theme);
 
   return (
-    <FlatList
-      data={issues}
-      renderItem={renderItem}
-      keyExtractor={keyExtractor}
-      contentContainerStyle={styles.listContent}
-      ListEmptyComponent={
-        <ListEmptyComponent
-          title={isError ? ERROR_SEARCH_TITLE : EMPTY_LIST_TITLE}
-          description={EMPTY_LIST_DESCRIPTION}
-        />
-      }
-      ListFooterComponent={<View style={{ height: bottom }} />}
-      refreshing={isFetching}
-      onRefresh={onRefresh}
-      showsVerticalScrollIndicator={false}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={issues}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        ListEmptyComponent={
+          <ListEmptyComponent
+            title={isError ? ERROR_SEARCH_TITLE : EMPTY_LIST_TITLE}
+            description={EMPTY_LIST_DESCRIPTION}
+          />
+        }
+        ListFooterComponent={<View style={{ height: bottom }} />}
+        refreshing={isFetching}
+        onRefresh={onRefresh}
+        showsVerticalScrollIndicator={false}
+      />
+      <LinearGradient
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        colors={[theme.colors.card, `${theme.colors.card}00`]}
+        style={styles.topShadowGradient}
+        pointerEvents="none"
+      />
+    </View>
+  );
+};
+
+export const IssuesCardsSkeleton = () => {
+  const { bottom } = useSafeAreaInsets();
+  const theme = useAppTheme();
+
+  const styles = createStyles(theme);
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={SKELETON_ISSUES_LIST}
+        contentContainerStyle={styles.listContent}
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        renderItem={({ item }) => (
+          <IssueItemSkeleton priority={item.priority} status={item.status} />
+        )}
+        ListFooterComponent={<View style={{ height: bottom }} />}
+        showsVerticalScrollIndicator={false}
+      />
+      <LinearGradient
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        colors={[theme.colors.card, `${theme.colors.card}00`]}
+        style={styles.topShadowGradient}
+        pointerEvents="none"
+      />
+    </View>
   );
 };
 
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
-  const { colors, typography } = theme;
+  const { colors, spacing } = theme;
 
   return StyleSheet.create({
+    container: {
+      flex: 1,
+    },
     listContent: {
       flexGrow: 1,
       backgroundColor: colors.card,
+      gap: spacing.lg,
+      paddingTop: spacing.md,
+    },
+    topShadowGradient: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      height: spacing.md,
     },
   });
 };

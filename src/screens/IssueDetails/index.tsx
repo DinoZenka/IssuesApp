@@ -13,7 +13,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
 import { useIssue, useUpdateIssue } from '@src/hooks/useIssues';
 import { useAppTheme } from '@src/utils/theme';
-import { useOnlineStatus } from '@src/hooks/useOnlineStatus';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -51,7 +50,6 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     refetch,
   } = useIssue(ID);
   const { mutate: updateIssue, isPending: isUpdating } = useUpdateIssue();
-  const isOnline = useOnlineStatus();
 
   const [priority, setPriority] = useState<IssuePriority | undefined>();
   const [status, setStatus] = useState<IssueStatus | undefined>(issue?.status);
@@ -75,7 +73,8 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleSave = useCallback(() => {
     if (!priority || !status) return;
-    updateIssue({ id: ID, updates: { priority, status } });
+    const updates = { priority, status, updatedAt: new Date().toISOString() };
+    updateIssue({ id: ID, updates });
   }, [ID, priority, status, updateIssue]);
 
   const formattedDate = useMemo(() => {
@@ -113,11 +112,7 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text style={styles.headerBackText}>Go Back</Text>
         </TouchableOpacity>
 
-        {showSkeleton ? (
-          <Shimmer width={80} />
-        ) : (
-          <IssueDetailsBadge isLoading={isFetching || isUpdating} />
-        )}
+        <IssueDetailsBadge isLoading={isFetching || isUpdating} />
       </View>
 
       <ScrollView
@@ -255,7 +250,7 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           {isUpdating ? (
             <ActivityIndicator color={colors.card} />
           ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <Text style={styles.saveButtonText}>Save</Text>
           )}
         </TouchableOpacity>
       </View>

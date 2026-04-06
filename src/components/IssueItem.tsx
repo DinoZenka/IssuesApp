@@ -93,7 +93,12 @@ export const IssueItemSkeleton: FC<IssueItemSkeletonProps> = ({
     status == 'open' ? <StatusOpenIcon /> : <StatusClosedIcon />;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       <View style={styles.header}>
         <View style={styles.badgeWrapper}>
           {statusIcon}
@@ -129,7 +134,6 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     container: {
       backgroundColor: colors.card,
       padding: spacing.lg,
-      marginTop: spacing.lg,
       borderRadius: spacing.sm,
       borderWidth: 1,
       borderColor: colors.border,

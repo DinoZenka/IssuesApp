@@ -8,40 +8,34 @@ import { issueStatusLabel } from '@src/utils/typeLabels';
 interface Props {
   count: number;
   type: IssueStatus;
+  showSkeleton?: boolean;
 }
 
-const IssueSummaryCard: React.FC<Props> = ({ count, type }) => {
+const IssueSummaryCard: React.FC<Props> = ({ count, type, showSkeleton }) => {
   const theme = useAppTheme();
-  const { colors, shadow } = theme;
+  const { colors } = theme;
 
   const dotColor = type === 'closed' ? colors.green80 : colors.purple60;
   const styles = createStyles(theme);
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card, ...shadow.sm }]}>
-      <Text style={[styles.label]}>{issueStatusLabel[type] || type}</Text>
+    <View
+      style={[styles.card, showSkeleton && styles.skeletonCard]}
+      accessible={false}
+      accessibilityElementsHidden={!!showSkeleton}
+      importantForAccessibility={showSkeleton ? 'no-hide-descendants' : 'auto'}
+    >
+      {showSkeleton ? (
+        <Shimmer width={60} height={14} />
+      ) : (
+        <Text style={[styles.label]}>{issueStatusLabel[type] || type}</Text>
+      )}
       <View style={styles.valueRow}>
-        <Text style={[styles.value, { color: colors.text }]}>{count}</Text>
-        <View style={[styles.dot, { backgroundColor: dotColor }]} />
-      </View>
-    </View>
-  );
-};
-
-export const IssueSummaryCardSkeleton: React.FC<Pick<Props, 'type'>> = ({
-  type,
-}) => {
-  const theme = useAppTheme();
-  const { colors, shadow } = theme;
-
-  const dotColor = type === 'closed' ? colors.green80 : colors.purple60;
-  const styles = createStyles(theme);
-
-  return (
-    <View style={[styles.card, { backgroundColor: colors.card }]}>
-      <Shimmer width={80} />
-      <View style={styles.valueRow}>
-        <Shimmer width={40} />
+        {showSkeleton ? (
+          <Shimmer width={30} height={18} />
+        ) : (
+          <Text style={[styles.value, { color: colors.text }]}>{count}</Text>
+        )}
         <View style={[styles.dot, { backgroundColor: dotColor }]} />
       </View>
     </View>
@@ -51,12 +45,16 @@ export const IssueSummaryCardSkeleton: React.FC<Pick<Props, 'type'>> = ({
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   const { colors, spacing, typography, shadow } = theme;
   return StyleSheet.create({
-    container: {},
     card: {
       flex: 1,
       padding: spacing.md,
       borderRadius: 8,
-      gap: 8,
+      gap: spacing.sm,
+      backgroundColor: colors.card,
+      ...shadow.sm,
+    },
+    skeletonCard: {
+      gap: spacing.xl,
     },
     label: {
       ...typography.variants.body2,

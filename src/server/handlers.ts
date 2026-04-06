@@ -2,13 +2,30 @@ import 'fast-text-encoding';
 import { rest } from 'msw';
 import { db } from './db';
 import { setupServer } from 'msw/native';
+import { onlineManager } from '@tanstack/react-query';
 
 export const handlers = [
   rest.get('*/issues', (req, res, ctx) => {
+    if (!onlineManager.isOnline()) {
+      return res(
+        ctx.status(503),
+        ctx.json({
+          message: 'No internet connection. Please try again later.',
+        }),
+      );
+    }
     return res(ctx.delay(1000), ctx.json(db.issue.getAll()));
   }),
 
   rest.get('*/issues/:id', ({ params }, res, ctx) => {
+    if (!onlineManager.isOnline()) {
+      return res(
+        ctx.status(503),
+        ctx.json({
+          message: 'No internet connection. Please try again later.',
+        }),
+      );
+    }
     const { id } = params;
     const issue = db.issue.findFirst({
       where: { id: { equals: id as string } },
@@ -21,6 +38,14 @@ export const handlers = [
   }),
 
   rest.patch('*/issues/:id', async (req, res, ctx) => {
+    if (!onlineManager.isOnline()) {
+      return res(
+        ctx.status(503),
+        ctx.json({
+          message: 'No internet connection. Please try again later.',
+        }),
+      );
+    }
     const { id } = req.params;
     try {
       const updates = await req.json();

@@ -2,16 +2,19 @@ import { Issue } from '@src/types/issue';
 
 const API_BASE_URL = 'http://192.168.0.1/api'; // Mock URL for MSW
 
-export const fetchIssues = async (): Promise<Issue[]> => {
-  const response = await fetch(`${API_BASE_URL}/issues`);
+export const fetchIssues = async (signal?: AbortSignal): Promise<Issue[]> => {
+  const response = await fetch(`${API_BASE_URL}/issues`, { signal });
   if (!response.ok) {
     throw new Error('Failed to fetch issues');
   }
   return response.json();
 };
 
-export const fetchIssueById = async (id: string): Promise<Issue> => {
-  const response = await fetch(`${API_BASE_URL}/issues/${id}`);
+export const fetchIssueById = async (
+  id: string,
+  signal?: AbortSignal,
+): Promise<Issue> => {
+  const response = await fetch(`${API_BASE_URL}/issues/${id}`, { signal });
   if (!response.ok) {
     throw new Error('Failed to fetch issue');
   }

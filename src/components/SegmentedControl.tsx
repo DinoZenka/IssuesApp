@@ -26,6 +26,7 @@ interface Props<T> {
   containerStyle?: StyleProp<ViewStyle>;
   fullWidth?: boolean;
   disabled?: boolean;
+  getItemAccessibilityLabel?: (item: T) => string;
 }
 
 const SPRING_CONFIG = {
@@ -44,6 +45,7 @@ function SegmentedControl<T>({
   containerStyle,
   fullWidth = false,
   disabled = false,
+  getItemAccessibilityLabel,
 }: Props<T>) {
   const theme = useAppTheme();
   const [layouts, setLayouts] = React.useState<{ x: number; width: number }[]>(
@@ -111,6 +113,10 @@ function SegmentedControl<T>({
           style={[styles.segment, fullWidth && styles.flexSegment]}
           onPress={() => handlePress(item, index)}
           activeOpacity={0.8}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityState={{ selected: activeIndex === index, disabled }}
+          accessibilityLabel={getItemAccessibilityLabel?.(item) ?? String(item)}
         >
           {renderItem(item, activeIndex === index)}
         </TouchableOpacity>
@@ -118,21 +124,6 @@ function SegmentedControl<T>({
     </View>
   );
 }
-
-export const SegmentedControlSkeleton = () => {
-  const theme = useAppTheme();
-  const styles = createStyles(theme);
-
-  return (
-    <View style={[styles.container, styles.skeletonContainer]}>
-      <View style={styles.skeletonActiveItem}>
-        <Shimmer width={18} height={12} />
-      </View>
-      <Shimmer width={42} height={12} />
-      <Shimmer width={42} height={12} />
-    </View>
-  );
-};
 
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   const { colors } = theme;
@@ -172,22 +163,6 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     },
     flexSegment: {
       flex: 1,
-    },
-    skeletonContainer: {
-      height: 40,
-      alignItems: 'center',
-      gap: 12,
-      padding: 4,
-      paddingRight: 12,
-      backgroundColor: colors.background,
-    },
-    skeletonActiveItem: {
-      height: '100%',
-      padding: 8,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      borderRadius: 8,
     },
   });
 };
