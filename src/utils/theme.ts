@@ -1,7 +1,7 @@
 import { useColorScheme } from 'react-native';
 
 const palette = {
-  primary: '#007bff',
+  primary: '#5850EC',
   danger: '#FF2929',
   warning: '#ffc107',
   info: '#17a2b8',
@@ -48,6 +48,7 @@ export const lightColors = {
   dark: palette.black,
   dark80: palette.grey800,
   dark40: palette.grey400,
+  orange: palette.orange,
 };
 
 export const darkColors: typeof lightColors = {
@@ -68,6 +69,7 @@ export const darkColors: typeof lightColors = {
   dark: palette.black,
   dark80: palette.grey800,
   dark40: palette.grey400,
+  orange: palette.orange,
 };
 
 export const spacing = {
@@ -126,16 +128,19 @@ export const typography = {
       fontFamily: fonts.regular,
       fontSize: 14,
       fontWeight: '400' as const,
+      lineHeight: 14 * 1.4,
     },
     bodyLight: {
       fontFamily: fonts.light,
       fontSize: 14,
       fontWeight: '300' as const,
+      lineHeight: 14 * 1.4,
     },
     body2: {
       fontFamily: fonts.regular,
       fontSize: 13,
       fontWeight: '400' as const,
+      lineHeight: 13 * 1.4,
     },
     bodyTab: {
       fontFamily: fonts.regular,

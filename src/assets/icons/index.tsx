@@ -7,3 +7,6 @@ export { default as PriorityMediumIcon } from './PriorityMediumIcon';
 export { default as PriorityHighIcon } from './PriorityHighIcon';
 export { default as PageSearchIcon } from './PageSearchIcon';
 export { default as CrossIcon } from './CrossIcon';
+export { default as ArrowLeft } from './ArrowLeft';
+export { default as SparksIcon } from './SparksIcon';
+export { default as TaskListIcon } from './TaskListIcon';

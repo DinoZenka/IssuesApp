@@ -164,7 +164,7 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     header: {
       marginTop: spacing.xs,
       padding: spacing.lg,
-      backgroundColor: 'transparent',
+      paddingTop: 22,
     },
     titleContainer: {
       flexDirection: 'row',

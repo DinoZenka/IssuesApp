@@ -1,10 +1,11 @@
+import 'fast-text-encoding';
 import { rest } from 'msw';
 import { db } from './db';
 import { setupServer } from 'msw/native';
 
 export const handlers = [
   rest.get('*/issues', (req, res, ctx) => {
-    return res(ctx.json(db.issue.getAll()));
+    return res(ctx.delay(1000), ctx.json(db.issue.getAll()));
   }),
 
   rest.get('*/issues/:id', ({ params }, res, ctx) => {
@@ -16,22 +17,30 @@ export const handlers = [
     if (!issue) {
       return res(ctx.status(404));
     }
-    return res(ctx.json(issue));
+    return res(ctx.delay(2000), ctx.json(issue));
   }),
 
-  rest.patch('*/issues/:id', (req, res, ctx) => {
+  rest.patch('*/issues/:id', async (req, res, ctx) => {
     const { id } = req.params;
-    const updates = req.body;
+    try {
+      const updates = await req.json();
 
-    const updatedIssue = db.issue.update({
-      where: { id: { equals: id as string } },
-      data: {
-        ...(updates as Record<string, unknown>),
-        updatedAt: new Date().toLocaleString(),
-      },
-    });
+      const updatedIssue = db.issue.update({
+        where: { id: { equals: id as string } },
+        data: {
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        },
+      });
 
-    return res(ctx.json(updatedIssue));
+      if (!updatedIssue) {
+        return res(ctx.status(404), ctx.json({ message: 'Not Found' }));
+      }
+
+      return res(ctx.delay(500), ctx.json(updatedIssue));
+    } catch (error) {
+      return res(ctx.status(500), ctx.json({ error: 'Internal Server Error' }));
+    }
   }),
 ];
 

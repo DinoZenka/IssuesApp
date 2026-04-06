@@ -20,6 +20,6 @@ for (let i = 0; i < 100; i++) {
     description: faker.lorem.paragraphs({ min: 3, max: 6 }),
     status: faker.helpers.arrayElement(['open', 'closed']),
     priority: faker.helpers.arrayElement(['low', 'medium', 'high']),
-    updatedAt: faker.date.recent().toLocaleString(),
+    updatedAt: faker.date.recent().toISOString(),
   });
 }

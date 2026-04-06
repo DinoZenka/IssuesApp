@@ -12,6 +12,7 @@ import {
 import PriorityIcon from './PriorityIcon';
 import Shimmer from './Shimmer';
 import { issuePriorityLabel, issueStatusLabel } from '@src/utils/typeLabels';
+import StatusIcon from './StatusIcon';
 
 interface IProps {
   issue: Issue;
@@ -33,8 +34,6 @@ const IssueItem: FC<IProps> = ({ issue, onPress }) => {
   }, [issue.updatedAt]);
 
   const styles = createStyles(theme);
-  const statusIcon =
-    issue.status == 'open' ? <StatusOpenIcon /> : <StatusClosedIcon />;
 
   const statusLabel = issueStatusLabel[issue.status] || issue.status;
   const priorityLabel = issuePriorityLabel[issue.priority] || issue.priority;
@@ -49,7 +48,7 @@ const IssueItem: FC<IProps> = ({ issue, onPress }) => {
     >
       <View style={styles.header}>
         <View style={styles.badgeWrapper}>
-          {statusIcon}
+          <StatusIcon status={issue.status} />
           <Text style={styles.badgeText}>{statusLabel}</Text>
         </View>
         <View style={styles.badgeWrapper}>
