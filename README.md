@@ -1,4 +1,56 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# IssuesApp (Offline-first RN Issues Tracker)
+
+Offline-first **Issues Tracker** built with **React Native CLI** + **TypeScript**.  
+Data fetching/caching is powered by **TanStack Query** with **AsyncStorage persistence**, and the API is mocked locally using **MSW**.
+
+## Tech stack
+
+- **React Native CLI** (`react-native` 0.84) + **React 19**
+- **TypeScript**
+- **Navigation**: React Navigation (Native Stack)
+- **Server mocking**: MSW (`msw/native`) + `@mswjs/data`
+- **Data & caching**: TanStack Query + persisted cache (`@tanstack/react-query-persist-client`, `@tanstack/query-async-storage-persister`)
+- **Offline / connectivity**: NetInfo + TanStack `onlineManager`
+- **UI**: `react-native-linear-gradient`, `react-native-safe-area-context`, `react-native-svg`
+- **Animations**: `react-native-reanimated` (used for shimmer + interactions)
+- **Dates**: `date-fns`
+
+## How to run
+
+### Prerequisites
+
+- Follow React Native environment setup: [React Native docs](https://reactnative.dev/docs/set-up-your-environment)
+- Node version per `package.json` engines: **Node >= 22.11**
+
+### Install dependencies
+
+```sh
+npm install
+```
+
+### Start Metro
+
+```sh
+npm start
+```
+
+### Run on iOS
+
+```sh
+cd ios && bundle install && bundle exec pod install && cd ..
+npm run ios
+```
+
+### Run on Android
+
+```sh
+npm run android
+```
+
+#### If Android shows “Unable to load script”
+
+- Ensure Metro is running (`npm start`)
+- Ensure the emulator can reach Metro (usually `10.0.2.2:8081` for Android emulator)
 
 # Getting Started
 
