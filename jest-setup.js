@@ -11,6 +11,10 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
+jest.mock('@react-native-community/netinfo', () =>
+  require('@react-native-community/netinfo/jest/netinfo-mock.js'),
+);
+
 jest.mock('react-native-worklets', () =>
   require('react-native-worklets/src/mock'),
 );
