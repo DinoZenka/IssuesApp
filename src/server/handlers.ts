@@ -63,7 +63,7 @@ export const handlers = [
       }
 
       return res(ctx.delay(500), ctx.json(updatedIssue));
-    } catch (error) {
+    } catch {
       return res(ctx.status(500), ctx.json({ error: 'Internal Server Error' }));
     }
   }),

@@ -214,7 +214,7 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
-  const { colors, spacing, typography, shadow } = theme;
+  const { colors, spacing, typography } = theme;
   return StyleSheet.create({
     container: {
       flex: 1,

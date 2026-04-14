@@ -3,12 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Issue, IssuePriority, IssueStatus } from '@src/types/issue';
 import { format } from 'date-fns';
 import { useAppTheme } from '@src/utils/theme';
-import {
-  ClockIcon,
-  SearchIcon,
-  StatusClosedIcon,
-  StatusOpenIcon,
-} from '@src/assets/icons';
+import { ClockIcon, StatusClosedIcon, StatusOpenIcon } from '@src/assets/icons';
 import PriorityIcon from './PriorityIcon';
 import Shimmer from './Shimmer';
 import { issuePriorityLabel, issueStatusLabel } from '@src/utils/typeLabels';
@@ -21,7 +16,6 @@ interface IProps {
 
 const IssueItem: FC<IProps> = ({ issue, onPress }) => {
   const theme = useAppTheme();
-  const { colors } = theme;
 
   const handlePress = () => onPress(issue.id);
 
@@ -86,11 +80,10 @@ export const IssueItemSkeleton: FC<IssueItemSkeletonProps> = ({
   priority,
 }) => {
   const theme = useAppTheme();
-  const { colors } = theme;
 
   const styles = createStyles(theme);
   const statusIcon =
-    status == 'open' ? <StatusOpenIcon /> : <StatusClosedIcon />;
+    status === 'open' ? <StatusOpenIcon /> : <StatusClosedIcon />;
 
   return (
     <View

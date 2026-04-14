@@ -13,7 +13,6 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useAppTheme } from '@src/utils/theme';
-import Shimmer from './Shimmer';
 
 interface Props<T> {
   values: T[];
@@ -69,7 +68,7 @@ function SegmentedControl<T>({
       indicatorWidth.value = withSpring(currentLayout.width, SPRING_CONFIG);
       opacity.value = withSpring(1);
     }
-  }, [activeIndex, layouts]);
+  }, [activeIndex, layouts, translateX, indicatorWidth, opacity]);
 
   const handlePress = useCallback(
     (item: T, index: number) => {

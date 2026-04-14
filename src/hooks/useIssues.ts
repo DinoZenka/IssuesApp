@@ -48,7 +48,7 @@ export const useUpdateIssue = () => {
 
       return { previousIssues, previousIssue };
     },
-    onError: (err, variables, context) => {
+    onError: (_, variables, context) => {
       if (context?.previousIssues) {
         queryClient.setQueryData(queryKeys.issues, context.previousIssues);
       }

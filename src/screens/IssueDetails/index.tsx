@@ -128,7 +128,7 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.contentWrapper}>
           <View style={styles.titleRow}>
             {showSkeleton ? (
-              <Shimmer width={250} height={24} style={{ marginTop: 12 }} />
+              <Shimmer width={250} height={24} style={styles.titleSkeleton} />
             ) : (
               <Text style={styles.title}>{issue.title}</Text>
             )}
@@ -329,6 +329,9 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     title: {
       ...typography.variants.header1,
       color: colors.dark,
+    },
+    titleSkeleton: {
+      marginTop: 12,
     },
     updatedRow: {
       flexDirection: 'row',

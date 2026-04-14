@@ -34,7 +34,7 @@ const Shimmer: React.FC<Props> = ({
     } else {
       progress.value = 0;
     }
-  }, [shouldReduceMotion]);
+  }, [shouldReduceMotion, progress]);
 
   const animatedStyle = useAnimatedStyle(() => {
     if (shouldReduceMotion) {

@@ -1,4 +1,4 @@
-import { Issue, IssueStatus } from '@src/types/issue';
+import { Issue } from '@src/types/issue';
 
 export const createMockIssue = (overrides?: Partial<Issue>): Issue => ({
   id: 'default-id',

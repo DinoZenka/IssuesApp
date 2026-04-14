@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import IssueDetailsScreen from '../index';
 import { useIssue, useUpdateIssue } from '@src/hooks/useIssues';
 import { createMockIssue } from '@src/testing/factory';

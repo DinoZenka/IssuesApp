@@ -212,15 +212,16 @@ describe('useIssues hooks', () => {
             id: issueId,
             updates: { status: 'closed' },
           });
-        } catch (e) {}
+        } catch {}
       });
 
       await waitFor(() => {
-        expect(queryClient.getQueryData(queryKeys.issues)).toEqual([mockIssue]);
-        expect(
-          queryClient.getQueryData(queryKeys.issueDetails(issueId)),
-        ).toEqual(mockIssue);
+        expect(result.current.isError).toBe(true);
       });
+      expect(queryClient.getQueryData(queryKeys.issues)).toEqual([mockIssue]);
+      expect(queryClient.getQueryData(queryKeys.issueDetails(issueId))).toEqual(
+        mockIssue,
+      );
     });
 
     it('should invalidate queries on settlement', async () => {
