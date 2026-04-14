@@ -4,6 +4,9 @@ import IssueDetailsScreen from '../index';
 import { useIssue, useUpdateIssue } from '@src/hooks/useIssues';
 import { createMockIssue } from '@src/testing/factory';
 
+jest.mock('@src/hooks/useIssues');
+jest.mock('@src/hooks/useDebounce');
+
 const mockUseIssue = useIssue as jest.Mock;
 const mockUseUpdateIssue = useUpdateIssue as jest.Mock;
 

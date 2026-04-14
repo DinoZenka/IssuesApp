@@ -5,6 +5,9 @@ import { useIssues } from '@src/hooks/useIssues';
 import { createMockIssue } from '@src/testing/factory';
 import { useDebounce } from '@src/hooks/useDebounce';
 
+jest.mock('@src/hooks/useIssues');
+jest.mock('@src/hooks/useDebounce');
+
 const mockUseIssues = useIssues as jest.Mock;
 const mockUseDebounce = useDebounce as jest.Mock;
 
