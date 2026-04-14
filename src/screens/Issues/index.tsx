@@ -1,5 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
 import { useIssues } from '@src/hooks/useIssues';
@@ -106,7 +112,9 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
               </>
             ) : (
               <>
-                <Text style={styles.title}>Issues</Text>
+                <Text style={styles.title} testID="header-title">
+                  Issues
+                </Text>
                 <Text style={styles.dateText}>{currentDay}</Text>
               </>
             )}
@@ -141,7 +149,9 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
             {showSkeleton ? (
               <Shimmer width={60} />
             ) : (
-              <Text style={styles.listTitle}>Issues</Text>
+              <Text style={styles.listTitle} testID="list-title">
+                Issues
+              </Text>
             )}
 
             <SegmentedControl
