@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 
 const palette = {
@@ -163,15 +164,23 @@ export const shadow = {
 export const useAppTheme = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const colors = isDark ? darkColors : lightColors;
 
-  return {
-    colors,
-    spacing,
-    typography,
-    shadow,
-    isDark,
-  };
+  return useMemo(() => {
+    const colors = isDark ? darkColors : lightColors;
+
+    return {
+      colors,
+      spacing,
+      typography,
+      shadow,
+      isDark,
+    };
+  }, [isDark]);
+};
+
+export const useThemedStyles = <T>(styleFactory: (theme: AppTheme) => T) => {
+  const theme = useAppTheme();
+  return useMemo(() => styleFactory(theme), [theme, styleFactory]);
 };
 
 export type AppTheme = ReturnType<typeof useAppTheme>;

@@ -9,22 +9,27 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
 import { useIssues } from '@src/hooks/useIssues';
-import IssueCards, { IssuesCardsSkeleton } from '@src/components/IssueCards';
-import IssueStatusIndicator from '@src/components/IssueStatusIndicator';
+import IssueCards, {
+  IssuesCardsSkeleton,
+} from '@src/screens/Issues/components/IssuesList';
+import IssueStatusIndicator from '@src/screens/Issues/components/StatusIndicator';
 import SegmentedControl from '@src/components/SegmentedControl';
-import SearchInput, { SearchInputSkeleton } from '@src/components/SearchInput';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 import { format } from 'date-fns';
-import IssueSummaryCard from '@src/components/IssueSummaryCard';
 import { useDebounce } from '@src/hooks/useDebounce';
 import LinearGradient from 'react-native-linear-gradient';
 import { FILTER_VALUES } from '@src/utils/constants';
 import { issueFilterLaber } from '@src/utils/typeLabels';
 import Shimmer from '@src/components/Shimmer';
+import SummaryCard from './components/SummaryCard';
+import SearchInput, { SearchInputSkeleton } from './components/SearchInput';
+import SegmentItem from '@src/components/SegmentItem';
+import { IssueStatus } from '@src/types/issue';
+import { useIsFocused } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Issues'>;
 
@@ -44,6 +49,7 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const isFocused = useIsFocused();
 
   const { closedCount, openCount } = useMemo(() => {
     if (!issues) return { closedCount: 0, openCount: 0 };
@@ -77,6 +83,8 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
   const isFilterError =
     debouncedSearchQuery.length > 0 && filteredIssues.length === 0;
 
+  const showSkeleton = isLoading;
+
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
   };
@@ -92,10 +100,21 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
     },
     [navigation],
   );
+  const styles = useThemedStyles(createStyles);
 
-  const styles = createStyles(theme);
-
-  const showSkeleton = isLoading;
+  const renderFilterSegment = useCallback(
+    (item: IssueStatus | 'all', isSelected: boolean): React.ReactNode => (
+      <SegmentItem
+        label={issueFilterLaber[item]}
+        icon={null}
+        isSelected={isSelected}
+        isLoading={showSkeleton}
+        shimmerWidth={28}
+        containerStyle={styles.filterSegmentContainer}
+      />
+    ),
+    [showSkeleton, styles],
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -132,12 +151,12 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
           />
 
           <View style={styles.summaryCardsContainer}>
-            <IssueSummaryCard
+            <SummaryCard
               count={closedCount}
               type="closed"
               showSkeleton={showSkeleton}
             />
-            <IssueSummaryCard
+            <SummaryCard
               count={openCount}
               type="open"
               showSkeleton={showSkeleton}
@@ -162,20 +181,7 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
               getItemAccessibilityLabel={item =>
                 `Filter issues by ${issueFilterLaber[item] || item}`
               }
-              renderItem={(item, isSelected) =>
-                showSkeleton ? (
-                  <Shimmer width={28} height={20} />
-                ) : (
-                  <Text
-                    style={[
-                      styles.issueStatusText,
-                      isSelected && styles.issueStatusTextActive,
-                    ]}
-                  >
-                    {issueFilterLaber[item] || item}
-                  </Text>
-                )
-              }
+              renderItem={renderFilterSegment}
             />
           </View>
           {showSkeleton ? (
@@ -195,7 +201,7 @@ const IssuesScreen: React.FC<Props> = ({ navigation }) => {
             <IssueCards
               issues={filteredIssues}
               onIssuePress={handleIssuePress}
-              isFetching={isFetching}
+              isFetching={isFetching && isFocused}
               onRefresh={refetch}
               isError={isQueryError || isFilterError}
             />
@@ -277,14 +283,8 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       alignItems: 'center',
       padding: spacing.xl,
     },
-    issueStatusText: {
-      ...typography.variants.bodyTab,
-      color: colors.dark80,
+    filterSegmentContainer: {
       paddingHorizontal: 4,
-    },
-    issueStatusTextActive: {
-      ...typography.variants.body2,
-      color: colors.dark,
     },
     shadowGradient: {
       position: 'absolute',
