@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -6,9 +6,10 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 import { CrossIcon, SearchIcon } from '@src/assets/icons';
-import Shimmer from './Shimmer';
+import Shimmer from '@src/components/Shimmer';
+import { useFocus } from '@src/hooks/useFocus';
 
 interface IProps {
   value: string;
@@ -18,15 +19,25 @@ interface IProps {
 
 const SearchInput: React.FC<IProps> = ({ value, onChangeText, error }) => {
   const theme = useAppTheme();
+  const { isFocused, focusHandlers } = useFocus();
+
   const { colors } = theme;
 
-  const styles = createStyles(theme, !!error);
+  const styles = useThemedStyles(createStyles);
+
   const handleClearInput = () => onChangeText('');
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputWrapper}>
+      <View
+        style={[
+          styles.inputWrapper,
+          isFocused && styles.inputFocused,
+          !!error && styles.inputError,
+        ]}
+      >
         <TextInput
+          {...focusHandlers}
           style={styles.input}
           placeholder="Search for"
           placeholderTextColor={colors.dark80}
@@ -60,7 +71,7 @@ export const SearchInputSkeleton = () => {
   const theme = useAppTheme();
   const { colors } = theme;
 
-  const styles = createStyles(theme, false);
+  const styles = createStyles(theme);
 
   return (
     <View
@@ -80,11 +91,9 @@ export const SearchInputSkeleton = () => {
   );
 };
 
-const createStyles = (
-  theme: ReturnType<typeof useAppTheme>,
-  hasError: boolean,
-) => {
+const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   const { colors, spacing, typography } = theme;
+
   return StyleSheet.create({
     container: {
       marginBottom: spacing.xs,
@@ -94,9 +103,15 @@ const createStyles = (
       alignItems: 'center',
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: hasError ? colors.danger : colors.border,
+      borderColor: colors.border,
       paddingHorizontal: spacing.lg,
       height: 48,
+    },
+    inputFocused: {
+      borderColor: colors.primary,
+    },
+    inputError: {
+      borderColor: colors.danger,
     },
     skeletonInputWrapper: {
       backgroundColor: colors.card,
@@ -106,7 +121,9 @@ const createStyles = (
       ...typography.variants.bodyLight,
       color: colors.dark,
       flex: 1,
-      height: '100%',
+      paddingVertical: 0,
+      lineHeight: undefined,
+      textAlignVertical: 'center',
     },
     iconWrapper: {
       marginLeft: spacing.sm,
@@ -119,4 +136,4 @@ const createStyles = (
   });
 };
 
-export default memo(SearchInput);
+export default SearchInput;

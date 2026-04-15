@@ -1,12 +1,12 @@
-import React, { useCallback, memo, FC } from 'react';
+import React, { useCallback, FC } from 'react';
 import { FlatList, StyleSheet, View, ListRenderItem } from 'react-native';
 import { Issue } from '@src/types/issue';
-import IssueItem, { IssueItemSkeleton } from './IssueItem';
-import { useAppTheme } from '@src/utils/theme';
-import ListEmptyComponent from './ListEmptyComponent';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
+import ListEmpty from './ListEmpty';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SKELETON_ISSUES_LIST } from '@src/utils/constants';
 import LinearGradient from 'react-native-linear-gradient';
+import ListItem, { ListItemSkeleton } from './ListItem';
 
 interface IProps {
   issues: Issue[];
@@ -22,7 +22,7 @@ const ERROR_SEARCH_TITLE = 'No issues';
 const EMPTY_LIST_DESCRIPTION =
   'You’re all set — there are no open or closed issues right now. \nNew issues will appear here as soon as they’re created.';
 
-const IssueCards: FC<IProps> = ({
+const IssuesList: FC<IProps> = ({
   issues,
   onIssuePress,
   isFetching,
@@ -33,13 +33,13 @@ const IssueCards: FC<IProps> = ({
   const { bottom } = useSafeAreaInsets();
 
   const renderItem: ListRenderItem<Issue> = useCallback(
-    ({ item }) => <IssueItem issue={item} onPress={onIssuePress} />,
+    ({ item }) => <ListItem issue={item} onPress={onIssuePress} />,
     [onIssuePress],
   );
 
   const keyExtractor = useCallback((item: Issue) => item.id, []);
 
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={styles.container}>
@@ -51,7 +51,7 @@ const IssueCards: FC<IProps> = ({
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         ListEmptyComponent={
-          <ListEmptyComponent
+          <ListEmpty
             title={isError ? ERROR_SEARCH_TITLE : EMPTY_LIST_TITLE}
             description={EMPTY_LIST_DESCRIPTION}
           />
@@ -76,7 +76,7 @@ export const IssuesCardsSkeleton = () => {
   const { bottom } = useSafeAreaInsets();
   const theme = useAppTheme();
 
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container}>
       <FlatList
@@ -88,7 +88,7 @@ export const IssuesCardsSkeleton = () => {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         renderItem={({ item }) => (
-          <IssueItemSkeleton priority={item.priority} status={item.status} />
+          <ListItemSkeleton priority={item.priority} status={item.status} />
         )}
         ListFooterComponent={<View style={{ height: bottom }} />}
         showsVerticalScrollIndicator={false}
@@ -127,4 +127,4 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   });
 };
 
-export default memo(IssueCards);
+export default IssuesList;

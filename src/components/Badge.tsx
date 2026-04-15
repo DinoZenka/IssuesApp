@@ -1,11 +1,10 @@
 import { useOnlineStatus } from '@src/hooks/useOnlineStatus';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 import { FC } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 export const OfflineBadge = () => {
-  const theme = useAppTheme();
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={[styles.badgeWrapper, styles.offlineBadge]}>
@@ -15,8 +14,7 @@ export const OfflineBadge = () => {
 };
 
 export const PendingBadge = () => {
-  const theme = useAppTheme();
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={[styles.badgeWrapper, styles.pendingBadge]}>
@@ -26,8 +24,7 @@ export const PendingBadge = () => {
 };
 
 export const SynchronizedBadge = () => {
-  const theme = useAppTheme();
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={[styles.badgeWrapper, styles.synchronizedBadge]}>

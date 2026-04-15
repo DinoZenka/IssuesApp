@@ -2,21 +2,19 @@ import React, { FC, memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Issue, IssuePriority, IssueStatus } from '@src/types/issue';
 import { format } from 'date-fns';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 import { ClockIcon, StatusClosedIcon, StatusOpenIcon } from '@src/assets/icons';
-import PriorityIcon from './PriorityIcon';
-import Shimmer from './Shimmer';
 import { issuePriorityLabel, issueStatusLabel } from '@src/utils/typeLabels';
-import StatusIcon from './StatusIcon';
+import StatusIcon from '@src/components/StatusIcon';
+import PriorityIcon from '@src/components/PriorityIcon';
+import Shimmer from '@src/components/Shimmer';
 
 interface IProps {
   issue: Issue;
   onPress: (id: string) => void;
 }
 
-const IssueItem: FC<IProps> = ({ issue, onPress }) => {
-  const theme = useAppTheme();
-
+const ListItem: FC<IProps> = ({ issue, onPress }) => {
   const handlePress = () => onPress(issue.id);
 
   const formattedDate = React.useMemo(() => {
@@ -27,7 +25,7 @@ const IssueItem: FC<IProps> = ({ issue, onPress }) => {
     }
   }, [issue.updatedAt]);
 
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   const statusLabel = issueStatusLabel[issue.status] || issue.status;
   const priorityLabel = issuePriorityLabel[issue.priority] || issue.priority;
@@ -70,12 +68,12 @@ const IssueItem: FC<IProps> = ({ issue, onPress }) => {
   );
 };
 
-interface IssueItemSkeletonProps {
+interface ListItemSkeletonProps {
   status: IssueStatus;
   priority: IssuePriority;
 }
 
-export const IssueItemSkeleton: FC<IssueItemSkeletonProps> = ({
+export const ListItemSkeleton: FC<ListItemSkeletonProps> = ({
   status,
   priority,
 }) => {
@@ -176,4 +174,13 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   });
 };
 
-export default memo(IssueItem);
+export default memo(ListItem, (prev, next) => {
+  const prevIssue = prev.issue;
+  const nextIssue = next.issue;
+  return (
+    prevIssue.id === nextIssue.id &&
+    prevIssue.updatedAt === nextIssue.updatedAt &&
+    prevIssue.status === nextIssue.status &&
+    prevIssue.priority === nextIssue.priority
+  );
+});

@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 
 interface Props<T> {
   values: T[];
@@ -46,7 +46,6 @@ function SegmentedControl<T>({
   disabled = false,
   getItemAccessibilityLabel,
 }: Props<T>) {
-  const theme = useAppTheme();
   const [layouts, setLayouts] = React.useState<{ x: number; width: number }[]>(
     [],
   );
@@ -96,7 +95,7 @@ function SegmentedControl<T>({
     opacity: opacity.value,
   }));
 
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View

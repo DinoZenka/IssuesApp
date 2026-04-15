@@ -1,5 +1,5 @@
 import { PageSearchIcon } from '@src/assets/icons';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 import { FC } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -8,9 +8,8 @@ interface IProps {
   description: string;
 }
 
-const ListEmptyComponent: FC<IProps> = ({ title, description }) => {
-  const theme = useAppTheme();
-  const styles = createStyles(theme);
+const ListEmpty: FC<IProps> = ({ title, description }) => {
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={styles.emptyContainer}>
@@ -48,4 +47,4 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   });
 };
 
-export default ListEmptyComponent;
+export default ListEmpty;

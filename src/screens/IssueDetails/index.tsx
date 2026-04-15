@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect, FC } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,11 @@ import {
   ActivityIndicator,
   ScrollView,
   RefreshControl,
-  ViewStyle,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/navigation/types';
 import { useIssue, useUpdateIssue } from '@src/hooks/useIssues';
-import { useAppTheme } from '@src/utils/theme';
+import { useAppTheme, useThemedStyles } from '@src/utils/theme';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -33,6 +32,9 @@ import IssueDetailsBadge from '@src/components/Badge';
 import LinearGradient from 'react-native-linear-gradient';
 import Shimmer from '@src/components/Shimmer';
 import { DETAILS_PRIORITIES, DETAILS_STATUSES } from '@src/utils/constants';
+import DesctiptionSkeleton from './components/DescriptionSkeleton';
+import SegmentItem from '../../components/SegmentItem';
+import DetailsNotFound from './components/DetailsNotFound';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'IssueDetails'>;
 
@@ -86,22 +88,36 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [issue?.updatedAt]);
 
-  const styles = createStyles(theme);
+  const styles = useThemedStyles(createStyles);
 
   const isChanged = priority !== issue?.priority || status !== issue?.status;
 
   const showSkeleton = isLoading || !issue;
 
-  if (isError) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>Failed to load issue details.</Text>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const renderPrioritySegment = useCallback(
+    (item: IssuePriority, isSelected: boolean): React.ReactNode => (
+      <SegmentItem
+        label={issuePriorityLabel[item]}
+        icon={<PriorityIcon priority={item} />}
+        isSelected={isSelected}
+        isLoading={showSkeleton}
+      />
+    ),
+    [showSkeleton],
+  );
+
+  const renderStatusSegment = useCallback(
+    (item: IssueStatus, isSelected: boolean): React.ReactNode => (
+      <SegmentItem
+        label={issueStatusLabel[item]}
+        icon={<StatusIcon status={item} />}
+        isSelected={isSelected}
+        isLoading={showSkeleton}
+        shimmerWidth={80}
+      />
+    ),
+    [showSkeleton],
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -124,111 +140,92 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             colors={[colors.primary]}
           />
         }
+        contentContainerStyle={styles.scrollContainer}
       >
-        <View style={styles.contentWrapper}>
-          <View style={styles.titleRow}>
-            {showSkeleton ? (
-              <Shimmer width={250} height={24} style={styles.titleSkeleton} />
-            ) : (
-              <Text style={styles.title}>{issue.title}</Text>
-            )}
-          </View>
+        {isError ? (
+          <DetailsNotFound />
+        ) : (
+          <>
+            <View style={styles.contentWrapper}>
+              <View style={styles.titleRow}>
+                {showSkeleton ? (
+                  <Shimmer
+                    width={250}
+                    height={24}
+                    style={styles.titleSkeleton}
+                  />
+                ) : (
+                  <Text style={styles.title}>{issue.title}</Text>
+                )}
+              </View>
 
-          <View style={styles.updatedRow}>
-            <ClockIcon />
-            {showSkeleton ? (
-              <Shimmer width={225} height={18} />
-            ) : (
-              <Text style={styles.updatedText}>
-                Updated on: {formattedDate}
-              </Text>
-            )}
-          </View>
+              <View style={styles.updatedRow}>
+                <ClockIcon />
+                {showSkeleton ? (
+                  <Shimmer width={225} height={18} />
+                ) : (
+                  <Text style={styles.updatedText}>
+                    Updated on: {formattedDate}
+                  </Text>
+                )}
+              </View>
 
-          <View style={styles.divider} />
+              <View style={styles.divider} />
 
-          <View style={styles.segmentSection}>
-            <View style={styles.segmentTitleWrapper}>
-              <SparksIcon />
-              {showSkeleton ? (
-                <Shimmer width={60} />
-              ) : (
-                <Text style={styles.segmentTitle}>Priority</Text>
-              )}
-            </View>
-            <SegmentedControl
-              fullWidth
-              disabled={showSkeleton}
-              values={DETAILS_PRIORITIES}
-              selectedValue={priority}
-              onSelectedValueChange={setPriority}
-              renderItem={(item, isSelected) => (
-                <View style={styles.segmentContent}>
-                  <PriorityIcon priority={item} />
+              <View style={styles.segmentSection}>
+                <View style={styles.segmentTitleWrapper}>
+                  <SparksIcon />
                   {showSkeleton ? (
-                    <Shimmer width={60} height={16} />
+                    <Shimmer width={60} />
                   ) : (
-                    <Text
-                      style={[
-                        styles.segmentText,
-                        isSelected && styles.segmentTextActive,
-                      ]}
-                    >
-                      {issuePriorityLabel[item] || item}
-                    </Text>
+                    <Text style={styles.segmentTitle}>Priority</Text>
                   )}
                 </View>
-              )}
-            />
-          </View>
+                <SegmentedControl
+                  fullWidth
+                  disabled={showSkeleton}
+                  values={DETAILS_PRIORITIES}
+                  selectedValue={priority}
+                  onSelectedValueChange={setPriority}
+                  renderItem={renderPrioritySegment}
+                />
+              </View>
 
-          <View style={styles.divider} />
+              <View style={styles.divider} />
 
-          <View style={styles.segmentSection}>
-            <View style={styles.segmentTitleWrapper}>
-              <TaskListIcon />
-              {showSkeleton ? (
-                <Shimmer width={60} />
-              ) : (
-                <Text style={styles.segmentTitle}>Status</Text>
-              )}
-            </View>
-            <SegmentedControl
-              fullWidth
-              disabled={showSkeleton}
-              values={DETAILS_STATUSES}
-              selectedValue={status}
-              onSelectedValueChange={setStatus}
-              renderItem={(item, isSelected) => (
-                <View style={styles.segmentContent}>
-                  <StatusIcon status={item} />
+              <View style={styles.segmentSection}>
+                <View style={styles.segmentTitleWrapper}>
+                  <TaskListIcon />
                   {showSkeleton ? (
-                    <Shimmer width={80} height={16} />
+                    <Shimmer width={60} />
                   ) : (
-                    <Text
-                      style={[
-                        styles.segmentText,
-                        isSelected && styles.segmentTextActive,
-                      ]}
-                    >
-                      {issueStatusLabel[item] || item}
-                    </Text>
+                    <Text style={styles.segmentTitle}>Status</Text>
                   )}
                 </View>
-              )}
-            />
-          </View>
-        </View>
-        <View style={styles.descriptionWrapper}>
-          {showSkeleton ? (
-            <DesctiptionSkeleton containerStyle={styles.skeletonDescription} />
-          ) : (
-            <>
-              <Text style={styles.descriptionTitle}>Description</Text>
-              <Text style={styles.descriptionBody}>{issue.description}</Text>
-            </>
-          )}
-        </View>
+                <SegmentedControl
+                  fullWidth
+                  disabled={showSkeleton}
+                  values={DETAILS_STATUSES}
+                  selectedValue={status}
+                  onSelectedValueChange={setStatus}
+                  renderItem={renderStatusSegment}
+                />
+              </View>
+            </View>
+            {showSkeleton ? (
+              <View style={styles.descriptionWrapper}>
+                <DesctiptionSkeleton
+                  containerStyle={styles.skeletonDescription}
+                />
+              </View>
+            ) : (
+              <View style={styles.descriptionWrapper}>
+                <Text style={styles.descriptionTitle}>Description</Text>
+                <Text style={styles.descriptionBody}>{issue.description}</Text>
+              </View>
+            )}
+          </>
+        )}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -258,30 +255,6 @@ const IssueDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 };
 
-const DesctiptionSkeleton: FC<{ containerStyle?: ViewStyle }> = ({
-  containerStyle,
-}) => (
-  <View style={containerStyle}>
-    <Shimmer width={60} height={24} />
-    <View />
-    <Shimmer />
-    <Shimmer />
-    <Shimmer />
-    <View />
-    <Shimmer />
-    <Shimmer />
-    <Shimmer />
-    <View />
-    <Shimmer />
-    <Shimmer />
-    <Shimmer />
-    <View />
-    <Shimmer />
-    <Shimmer />
-    <Shimmer />
-  </View>
-);
-
 const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
   const { colors, spacing, typography } = theme;
   return StyleSheet.create({
@@ -291,12 +264,6 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     },
     topInset: {
       backgroundColor: colors.card,
-    },
-    center: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: spacing.lg,
     },
     header: {
       backgroundColor: colors.card,
@@ -315,6 +282,9 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
+    },
+    scrollContainer: {
+      flexGrow: 1,
     },
     contentWrapper: {
       backgroundColor: colors.card,
@@ -383,11 +353,6 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.bold,
     },
-    errorText: {
-      fontSize: typography.fontSize.md,
-      color: colors.danger,
-      marginBottom: spacing.lg,
-    },
     backButton: {
       paddingHorizontal: spacing.xl,
       paddingVertical: spacing.md,
@@ -397,19 +362,6 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => {
     backText: {
       color: colors.card,
       fontWeight: 'bold',
-    },
-    segmentContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-    },
-    segmentText: {
-      ...typography.variants.bodyRegular,
-      color: colors.dark80,
-    },
-    segmentTextActive: {
-      ...typography.variants.body2,
-      color: colors.dark,
     },
     segmentSection: {
       gap: spacing.sm,
